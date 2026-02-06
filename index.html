@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Comic Reader</title>
+<title>OPM - Terra 3</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -48,6 +48,7 @@ body{
     border-radius:10px;
     box-shadow:0 0 50px rgba(0,0,0,.9);
     user-select:none;
+    transition: transform .2s ease, opacity .2s ease;
 }
 
 /* TAP ZONES */
@@ -102,16 +103,11 @@ body{
     width:140px;
 }
 
-/* HIDE UI */
-.hide-ui .header,
-.hide-ui .controls{
+/* AUTO HIDE UI */
+.auto-hide .header,
+.auto-hide .controls{
     opacity:0;
     pointer-events:none;
-}
-
-/* MOBILE OPTIMIZATION */
-@media(max-width:600px){
-    #slider{width:100px}
 }
 </style>
 </head>
@@ -119,7 +115,7 @@ body{
 <body>
 
 <div class="header">
-    <div class="title">My Comic</div>
+    <div class="title">OPM - Terra 3</div>
     <div class="page-info" id="pageInfo"></div>
 </div>
 
@@ -140,21 +136,32 @@ body{
 </div>
 
 <script>
-const totalPages = 73; // change this
+const totalPages = 73;
 let currentPage = 1;
+let scale = 1;
+let startDist = 0;
+let hideTimer;
 
 const img = document.getElementById("comicPage");
 const pageInfo = document.getElementById("pageInfo");
 const slider = document.getElementById("slider");
 slider.max = totalPages;
 
+/* -------- LOAD PAGE -------- */
 function loadPage(){
     const num = String(currentPage).padStart(3,'0');
-    img.src = `pages/${num}.jpg`;
-    pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
-    slider.value = currentPage;
+    img.style.opacity = 0;
+
+    setTimeout(()=>{
+        img.src = `pages/${num}.jpg`;
+        pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
+        slider.value = currentPage;
+        resetZoom();
+        img.onload = ()=> img.style.opacity = 1;
+    },120);
 }
 
+/* -------- NAV -------- */
 function nextPage(){
     if(currentPage<totalPages){currentPage++;loadPage();}
 }
@@ -167,13 +174,13 @@ slider.addEventListener("input",()=>{
     loadPage();
 });
 
-// Keyboard
+/* -------- KEYBOARD -------- */
 document.addEventListener("keydown",e=>{
     if(e.key==="ArrowRight") nextPage();
     if(e.key==="ArrowLeft") prevPage();
 });
 
-// Swipe
+/* -------- SWIPE -------- */
 let startX=0;
 document.addEventListener("touchstart",e=>{
     startX=e.changedTouches[0].screenX;
@@ -184,12 +191,70 @@ document.addEventListener("touchend",e=>{
     if(diff<-60) nextPage();
 });
 
-// UI toggle
+/* -------- ZOOM (wheel) -------- */
+img.addEventListener("wheel",e=>{
+    e.preventDefault();
+    scale += e.deltaY * -0.001;
+    scale = Math.min(Math.max(1, scale), 4);
+    applyZoom();
+});
+
+/* -------- PINCH ZOOM -------- */
+img.addEventListener("touchmove",e=>{
+    if(e.touches.length===2){
+        e.preventDefault();
+        let dx=e.touches[0].clientX-e.touches[1].clientX;
+        let dy=e.touches[0].clientY-e.touches[1].clientY;
+        let dist=Math.sqrt(dx*dx+dy*dy);
+        if(!startDist) startDist=dist;
+        scale*=dist/startDist;
+        scale=Math.min(Math.max(1,scale),4);
+        applyZoom();
+        startDist=dist;
+    }
+});
+img.addEventListener("touchend",()=>startDist=0);
+
+/* -------- DOUBLE TAP ZOOM -------- */
+let lastTap=0;
+img.addEventListener("touchend",()=>{
+    let now=Date.now();
+    if(now-lastTap<300){
+        scale = scale===1 ? 2 : 1;
+        applyZoom();
+    }
+    lastTap=now;
+});
+
+/* -------- APPLY / RESET ZOOM -------- */
+function applyZoom(){
+    img.style.transform=`scale(${scale})`;
+}
+function resetZoom(){
+    scale=1;
+    applyZoom();
+}
+
+/* -------- AUTO HIDE UI -------- */
+function showUI(){
+    document.body.classList.remove("auto-hide");
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(()=>{
+        document.body.classList.add("auto-hide");
+    },3000);
+}
+
+document.addEventListener("mousemove", showUI);
+document.addEventListener("touchstart", showUI);
+document.addEventListener("click", showUI);
+
+/* -------- TOGGLE UI -------- */
 function toggleUI(){
-    document.body.classList.toggle("hide-ui");
+    document.body.classList.toggle("auto-hide");
 }
 
 loadPage();
+showUI();
 </script>
 
 </body>
