@@ -15,7 +15,6 @@ body{
     overflow:hidden;
 }
 
-/* HEADER */
 .header{
     position:fixed;
     top:0;
@@ -33,7 +32,6 @@ body{
 .title{font-weight:600;font-size:15px;letter-spacing:1px}
 .page-info{font-size:13px;opacity:.8}
 
-/* VIEWER */
 .viewer{
     height:100vh;
     display:flex;
@@ -51,7 +49,6 @@ body{
     transition: transform .2s ease, opacity .2s ease;
 }
 
-/* TAP ZONES */
 .tap-zone{
     position:fixed;
     top:0;
@@ -174,13 +171,11 @@ slider.addEventListener("input",()=>{
     loadPage();
 });
 
-/* -------- KEYBOARD -------- */
 document.addEventListener("keydown",e=>{
     if(e.key==="ArrowRight") nextPage();
     if(e.key==="ArrowLeft") prevPage();
 });
 
-/* -------- SWIPE -------- */
 let startX=0;
 document.addEventListener("touchstart",e=>{
     startX=e.changedTouches[0].screenX;
@@ -191,7 +186,6 @@ document.addEventListener("touchend",e=>{
     if(diff<-60) nextPage();
 });
 
-/* -------- ZOOM (wheel) -------- */
 img.addEventListener("wheel",e=>{
     e.preventDefault();
     scale += e.deltaY * -0.001;
@@ -199,7 +193,6 @@ img.addEventListener("wheel",e=>{
     applyZoom();
 });
 
-/* -------- PINCH ZOOM -------- */
 img.addEventListener("touchmove",e=>{
     if(e.touches.length===2){
         e.preventDefault();
@@ -215,7 +208,6 @@ img.addEventListener("touchmove",e=>{
 });
 img.addEventListener("touchend",()=>startDist=0);
 
-/* -------- DOUBLE TAP ZOOM -------- */
 let lastTap=0;
 img.addEventListener("touchend",()=>{
     let now=Date.now();
@@ -226,7 +218,6 @@ img.addEventListener("touchend",()=>{
     lastTap=now;
 });
 
-/* -------- APPLY / RESET ZOOM -------- */
 function applyZoom(){
     img.style.transform=`scale(${scale})`;
 }
@@ -235,7 +226,6 @@ function resetZoom(){
     applyZoom();
 }
 
-/* -------- AUTO HIDE UI -------- */
 function showUI(){
     document.body.classList.remove("auto-hide");
     clearTimeout(hideTimer);
