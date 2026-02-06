@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Comic Reader</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    background:#0a0a0f;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto;
+    color:#fff;
+    overflow:hidden;
+}
+
+/* HEADER */
+.header{
+    position:fixed;
+    top:0;
+    width:100%;
+    padding:14px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    backdrop-filter:blur(12px);
+    background:rgba(0,0,0,.45);
+    z-index:20;
+    transition:.3s;
+}
+
+.title{font-weight:600;font-size:15px;letter-spacing:1px}
+.page-info{font-size:13px;opacity:.8}
+
+/* VIEWER */
+.viewer{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding-top:60px;
+}
+
+.viewer img{
+    max-width:96%;
+    max-height:92vh;
+    border-radius:10px;
+    box-shadow:0 0 50px rgba(0,0,0,.9);
+    user-select:none;
+}
+
+/* TAP ZONES */
+.tap-zone{
+    position:fixed;
+    top:0;
+    height:100%;
+    width:33%;
+    z-index:15;
+}
+.left{left:0}
+.center{left:33%}
+.right{right:0}
+
+/* CONTROLS */
+.controls{
+    position:fixed;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(14px);
+    padding:10px 14px;
+    border-radius:40px;
+    z-index:20;
+    transition:.3s;
+}
+
+/* BUTTONS */
+.btn{
+    height:44px;
+    min-width:44px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    font-size:18px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.btn:active{transform:scale(.92);background:rgba(255,255,255,.25)}
+
+/* SLIDER */
+#slider{
+    width:140px;
+}
+
+/* HIDE UI */
+.hide-ui .header,
+.hide-ui .controls{
+    opacity:0;
+    pointer-events:none;
+}
+
+/* MOBILE OPTIMIZATION */
+@media(max-width:600px){
+    #slider{width:100px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="title">My Comic</div>
+    <div class="page-info" id="pageInfo"></div>
+</div>
+
+<div class="viewer">
+    <img id="comicPage" src="">
+</div>
+
+<!-- Tap zones -->
+<div class="tap-zone left" onclick="prevPage()"></div>
+<div class="tap-zone center" onclick="toggleUI()"></div>
+<div class="tap-zone right" onclick="nextPage()"></div>
+
+<!-- Controls -->
+<div class="controls">
+    <div class="btn" onclick="prevPage()">⟨</div>
+    <input type="range" id="slider" min="1" value="1">
+    <div class="btn" onclick="nextPage()">⟩</div>
+</div>
+
+<script>
+const totalPages = 20; // change this
+let currentPage = 1;
+
+const img = document.getElementById("comicPage");
+const pageInfo = document.getElementById("pageInfo");
+const slider = document.getElementById("slider");
+slider.max = totalPages;
+
+function loadPage(){
+    const num = String(currentPage).padStart(3,'0');
+    img.src = `pages/${num}.jpg`;
+    pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
+    slider.value = currentPage;
+}
+
+function nextPage(){
+    if(currentPage<totalPages){currentPage++;loadPage();}
+}
+function prevPage(){
+    if(currentPage>1){currentPage--;loadPage();}
+}
+
+slider.addEventListener("input",()=>{
+    currentPage=parseInt(slider.value);
+    loadPage();
+});
+
+// Keyboard
+document.addEventListener("keydown",e=>{
+    if(e.key==="ArrowRight") nextPage();
+    if(e.key==="ArrowLeft") prevPage();
+});
+
+// Swipe
+let startX=0;
+document.addEventListener("touchstart",e=>{
+    startX=e.changedTouches[0].screenX;
+});
+document.addEventListener("touchend",e=>{
+    let diff=e.changedTouches[0].screenX-startX;
+    if(diff>60) prevPage();
+    if(diff<-60) nextPage();
+});
+
+// UI toggle
+function toggleUI(){
+    document.body.classList.toggle("hide-ui");
+}
+
+loadPage();
+</script>
+
+</body>
+</html>
